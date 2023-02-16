@@ -1,7 +1,6 @@
 main();
 
 function main() {
-    alert("jaaaaa");
 
   const canvas = document.querySelector("#glcanvas");
   // Initialize the GL context
