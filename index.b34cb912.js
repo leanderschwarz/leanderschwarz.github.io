@@ -562,7 +562,7 @@ var _orbitControls = require("three/examples/jsm/controls/OrbitControls");
 // TODO fix grid // x y
 // Graphics
 var renderer, scene, camera, controls;
-var dim = 5;
+var dim = 10;
 var apple_n = 1;
 // Game Logic
 var started = false;
@@ -576,49 +576,73 @@ init_apple();
 function init() {
     renderer = new _three.WebGLRenderer();
     renderer.setSize(window.innerWidth, window.innerHeight);
-    camera = new _three.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 100);
+    camera = new _three.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 300);
     camera.position.set(-(dim * 1.5), dim * 2, 5);
-    camera.lookAt(dim / 2, 0, dim / 2);
+    //camera.lookAt(dim / 2, 0, dim / 2);
     controls = new (0, _orbitControls.OrbitControls)(camera, renderer.domElement);
+    controls.target.set(dim / 2, 0, dim / 2);
     scene = new _three.Scene();
-    const loader = new _three.TextureLoader();
-    const texture = loader.load("./src/bg.jpg");
-    const rt = new _three.WebGLCubeRenderTarget(texture.image.height);
-    rt.fromEquirectangularTexture(renderer, texture);
-    scene.background = rt.texture;
-    const ambientLight = new _three.AmbientLight(0x606060);
+    scene.background = new _three.Color("skyblue");
+    // Importar un modelo en json
+    const object_loader = new _three.ObjectLoader();
+    /*   const loader = new THREE.TextureLoader();
+  loader.load(
+	// resource URL
+	'resource/bg.jpg',
+
+	// onLoad callback
+	function ( texture ) {
+		// in this example we create the material when the texture is loaded
+        const rt = new THREE.WebGLCubeRenderTarget(texture.image.height);
+        rt.fromEquirectangularTexture(renderer, texture);
+        scene.background = rt.texture;
+	},
+
+	// onProgress callback currently not supported
+	undefined,
+
+	// onError callback
+	function ( err ) {
+		console.error( 'An error happened: ' + err.message );
+	}); */ const ambientLight = new _three.AmbientLight(0x606060);
     scene.add(ambientLight);
     let middle = Math.floor(dim / 2);
     let head = createBox(middle, middle, "yellow");
     snake.push(head);
     scene.add(head);
+    controls.target.copy(head.position);
+    spawnPlayground();
     const gridHelper = new _three.GridHelper(dim - 1, dim - 1, "red", "red");
     gridHelper.position.x = (dim - 1) / 2;
+    gridHelper.position.y = .55;
     gridHelper.position.z = (dim - 1) / 2;
     scene.add(gridHelper);
-    spawnPlayground();
     drawHighscore();
-    //scene.add(new THREE.AxesHelper(dim - 1));
+    drawFloor();
+    scene.add(new _three.AxesHelper(30));
     document.body.appendChild(renderer.domElement);
 }
-function drawBackground(scene) {
-    const loader = new _three.TextureLoader();
-    const texture = loader.load("resources/texture/b2g.jpg", ()=>{
-        const rt = new _three.WebGLCubeRenderTarget(texture.image.height);
-        rt.fromEquirectangularTexture(renderer, texture);
-        scene.background = rt.texture;
+function drawFloor() {
+    const geometry = new _three.PlaneGeometry(400, 400);
+    geometry.rotateX(-Math.PI / 2);
+    geometry.normal;
+    const material = new _three.MeshPhongMaterial({
+        color: new _three.Color("grey")
     });
+    const plane = new _three.Mesh(geometry, material);
+    plane.position.y = -0.5;
+    scene.add(plane);
 }
+function spawnSun() {}
 function spawnPlayground() {
-    let offset = 0.1 * dim;
-    let dim_offset = dim + offset;
-    const geometry = new _three.BoxGeometry(dim_offset, offset, dim_offset);
-    const material = new _three.MeshLambertMaterial({
+    let dim_offset = dim + 1;
+    const geometry = new _three.BoxGeometry(dim_offset, 1, dim_offset);
+    const material = new _three.MeshPhongMaterial({
         color: new _three.Color("white")
     });
     const pg = new _three.Mesh(geometry, material);
     pg.position.x += (dim - 1) / 2;
-    pg.position.y -= offset;
+    pg.position.y = 0;
     pg.position.z += (dim - 1) / 2;
     scene.add(pg);
 }
@@ -627,12 +651,12 @@ function createBox(x, z, color) {
     const lx = x;
     const lz = z;
     const geometry = new _three.BoxGeometry(0.85, 0.85, 0.85);
-    const material = new _three.MeshLambertMaterial({
+    const material = new _three.MeshPhongMaterial({
         color: new _three.Color(color)
     });
     const box = new _three.Mesh(geometry, material);
     box.position.x = lx;
-    box.position.y += 0.425;
+    box.position.y += 0.52 + 0.425;
     box.position.z = lz;
     return box;
 }
@@ -690,9 +714,19 @@ function move() {
         scene.add(body);
         snake.push(body);
     }
+//controls.target.copy(head.position);
+}
+function cameraBoundaries() {
+    if (camera.position.x < -100) camera.position.x = -100;
+    if (camera.position.x > 100) camera.position.x = 100;
+    if (camera.position.y < 5) camera.position.y = 5;
+    if (camera.position.y > 100) camera.position.y = 100;
+    if (camera.position.z < -100) camera.position.z = -100;
+    if (camera.position.z > 100) camera.position.z = 100;
 }
 function render() {
     requestAnimationFrame(render);
+    cameraBoundaries();
     controls.update();
     renderer.render(scene, camera);
 }
@@ -733,12 +767,18 @@ function check_apple(x, y) {
     }
     return false;
 }
+function camera_reset() {
+    camera.position.x = -dim / 2;
+    camera.position.y = dim * 2;
+    camera.position.z = dim / 2;
+}
 document.addEventListener("keydown", onDocumentKeyDown, false);
 function onDocumentKeyDown(event) {
     if (!started) {
         started = true;
-        setInterval(move, 1000);
+        setInterval(move, 500);
         for(let i = 0; i < apple_n; i++)spawn_apple();
+        camera_reset();
     }
     update_direction(event.code);
 } // TODO clearInterval();
@@ -30727,4 +30767,4 @@ class MapControls extends OrbitControls {
 
 },{"three":"ktPTu","@parcel/transformer-js/src/esmodule-helpers.js":"fD7H8"}]},["42cfA","76uUO"], "76uUO", "parcelRequire0811")
 
-//# sourceMappingURL=demo.js.map
+//# sourceMappingURL=index.b34cb912.js.map
