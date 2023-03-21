@@ -1,0 +1,11 @@
+Model Information:
+* title:	Buffalo Skull
+* source:	https://sketchfab.com/3d-models/buffalo-skull-670eb550f6b4409d8f51689e39c5beb3
+* author:	Stan (https://sketchfab.com/Stas_SayHallo)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Buffalo Skull" (https://sketchfab.com/3d-models/buffalo-skull-670eb550f6b4409d8f51689e39c5beb3) by Stan (https://sketchfab.com/Stas_SayHallo) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
